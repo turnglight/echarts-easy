@@ -114,38 +114,57 @@
         },
         setXAxisMinAndMax: function(min = 0 , max){
             this.option['xAxis'].min = min;
+            this.option['xAxis'].max = max;
+            return this;
+        },
+        setYAxisMinAndMax: function(min = 0 , max){
+            this.option['yAxis'].min = min;
             this.option['yAxis'].max = max;
+            return this;
         },
         // 设置坐标类型
-        setAxisType : function(axis, type, format){    //设置坐标轴
-            if(typeof(type) == "undefined" || type == 'string') {
-                this.option[axis].type = 'category';
-            }else if(type == 'time'){
-                this.option[axis].type = type;
-                if(format == 'HH:mm:ss'){
-                    this.option[axis].axisLabel.formatter = function(value, index){
-                        // 格式化成月/日，只在第一个刻度显示年份
-                        var date = new Date(value);
-                        var texts = date.getHours() + ":" + (date.getMinutes()<10?"0"+date.getMinutes():date.getMinutes())+":"+ (date.getSeconds()<10?"0"+date.getSeconds():date.getSeconds());
-                        return texts;
-                    }
-                }else if(format == 'HH:mm'){
-                    this.option[axis].axisLabel.formatter = function(value, index){
-                        // 格式化成月/日，只在第一个刻度显示年份
-                        var date = new Date(value);
-                        var texts = date.getHours() + ":" + (date.getMinutes()<10?"0"+date.getMinutes():date.getMinutes());
-                        return texts;
-                    }
-                }else if(format == 'yyyy-mm-dd HH:mm:ss'){
-                    this.option[axis].axisLabel.formatter = function(value, index) {
-                        // 格式化成月/日，只在第一个刻度显示年份
-                        var date = new Date(value);
-                        var texts = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDay() + " " + date.getHours() + ":" + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds());
-                        return texts;
-                    }
+        setAxisType : function(axis, format){    //设置坐标轴
+            this.option[axis].type = 'category';
+            if(format == 'HH:mm:ss'){
+                this.option[axis].axisLabel.formatter = function(value, index){
+                    var year = value.substring(0, 4)
+                    var month = value.substring(5, 7)
+                    var day = value.substring(8, 10)
+                    var hour = value.substring(11, 13)
+                    var minute = value.substring(14, 16)
+                    var seconds = value.substring(17, 19)
+                    // 格式化成月/日，只在第一个刻度显示年份
+                    var date = new Date(value);
+                    var texts = date.getHours() + ":" + (date.getMinutes()<10?"0"+date.getMinutes():date.getMinutes())+":"+ (date.getSeconds()<10?"0"+date.getSeconds():date.getSeconds());
+                    return texts;
+                }
+            }else if(format == 'HH:mm'){
+                this.option[axis].axisLabel.formatter = function(value, index){
+                    // 格式化成月/日，只在第一个刻度显示年份
+                    var date = new Date(value);
+                    var texts = date.getHours() + ":" + (date.getMinutes()<10?"0"+date.getMinutes():date.getMinutes());
+                    return texts;
+                }
+            }else if(format == 'yyyy-MM-dd HH:mm:ss'){
+                this.option[axis].axisLabel.formatter = function(value, index) {
+                    var year = value.substring(0, 4)
+                    var month = value.substring(5, 7)
+                    var day = value.substring(8, 10)
+                    var hour = value.substring(11, 13)
+                    var minute = value.substring(14, 16)
+                    var seconds = value.substring(17, 19)
+                    // 格式化成月/日，只在第一个刻度显示年份
+                    var date = new Date(year, month, day, hour, minute, seconds);
+                    var texts = date.getFullYear() + "-" + date.getMonth() + "-" + date.getDay() + " " + date.getHours() + ":" + (date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes()) + ":" + (date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds());
+                    return texts;
                 }
             }else{
-                this.option[axis].type = type;
+                this.option[axis].axisLabel.formatter = function(value, index){
+                    // 格式化成月/日，只在第一个刻度显示年份
+                    var date = new Date(value);
+                    var texts = date.getHours() + ":" + (date.getMinutes()<10?"0"+date.getMinutes():date.getMinutes());
+                    return texts;
+                }
             }
             return this;
         },
@@ -178,7 +197,7 @@
                 if(point){
                     data = this.charts.option.series[0].data;
                     let array = Object.assign([], data);
-                    array.splice(0, 0, point[0]);
+                    array.unshift(point);
                     array.pop();
                     this.charts.option.series[0].data = array;
                     this.charts.chart.setOption(this.charts.option)
@@ -204,7 +223,8 @@
                 x:'center',
                 textStyle:{
                     color:'green',
-                }
+                },
+                text: ''
             },
             tooltip:{
                 formatter:'{c}'
@@ -214,8 +234,6 @@
                 splitLine:{
                     show: false
                 },
-                min: 0,
-                max: 50,
                 axisLabel:{
                     color: 'rgb(0, 0, 0)',
                     interval: 'auto',
@@ -237,7 +255,8 @@
                     fontStyle: 'normal',
                     fontWeight: 'normal'
                 },
-            }
+            },
+            geo:{}
         };
         option[type] = Object.assign(public || {}, data || {});
     };
