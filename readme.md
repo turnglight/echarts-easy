@@ -28,6 +28,14 @@
 1. title: 标题名称
 ***
 
+
+#### setLegend
+***
+```charts.setLegend([]):设置类目```
++ 设置的类目数组，必须与series中的元素name保持一致，否则无效
+
+***
+
 #### setXAxisFontStyle
 ***
 ```charts.setXAxisFontStyle(style): 设置X轴的坐标字体```
@@ -120,8 +128,31 @@
 3. format:  type=time时，支持两种日期格式，(HH:mm:ss)/(yyyy-mm-dd HH:mm:ss)
 ***
 
+#### setAreaColor
+***
+```charts.setAreaColor(rgb): 设置区域颜色```
 
+1. rgb:颜色的rgb值
+    + 如果需要设置透明度，可以试用rgb(a,b,c,x),x填入透明度0-1的数值
+***
 
+#### setItemColor
+***
+```charts.setItemColor(rgb): 设置数值Item点的颜色```
+
+1. rgb:颜色的rgb值
+    + 如果需要设置透明度，可以试用rgb(a,b,c,x),x填入透明度0-1的数值
+***
+
+#### setXAxisType
+***
+```charts.setXAxisType(type)```
+1. type:
+    + value: 数值
+    + category: 类目
+    + time: 时间
+    + log
+***
 
 
 

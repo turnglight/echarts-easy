@@ -47,9 +47,16 @@
     }
 
     var Charts = function(type, selector){
-        this.option = clone(option[type] || {});
+
         this.type = type;
         this.chart = ec.init(document.querySelector(selector));
+        if(type === 'scatter' || type === 'pie'){
+            this.option = this.setItemDefaultOption(type)
+        }else if(type === 'bar'){
+            this.option = this.setBarDefaultOption(type)
+        }else{
+            this.option = this.setAxisDefaultOption(type)
+        }
         this.queue = [];
     };
 
@@ -58,7 +65,7 @@
             this.option.title.text = text;
             return this;
         },
-        legend : function(data, config){     //设置图例
+        setLegend : function(data, config){     //设置图例
             var oLegend = this.option.legend || {};
             this.option.legend = config ? Object.assign(oLegend, config) : oLegend;
             this.option.legend.data = data;
@@ -110,6 +117,14 @@
         // 设置坐标轴的字体颜色
         setYAxisFontColor: function(color='rgb(0,0,0)'){
             this.option['yAxis'].axisLabel.color = color;
+            return this;
+        },
+        setXAxisType: function(type='category'){
+            this.option['xAxis'].type = type;
+            return this;
+        },
+        setYAxisType: function(type='category'){
+            this.option['yAxis'].type = type;
             return this;
         },
         setXAxisMinAndMax: function(min = 0 , max){
@@ -181,15 +196,54 @@
             this.option['xAxis'].data = data;
             return this;
         },
-        setYAxisData : function(data){
-            var oSeries = new Array(data.length);
-            this.option.series = oSeries;
-            for(var i = 0; i < data.length; i++){
-                this.option.series[i] = Object.assign({type:this.type}, [{data:[]}]);
-                this.option.series[i].data = data[i];
+        setYAxisData : function(data, reverse){
+            if(reverse){
+                this.option['yAxis'].data = data;
+            }else{
+                var oSeries = new Array(data.length);
+                this.option.series = oSeries;
+                for(var i = 0; i < data.length; i++){
+                    this.option.series[i] = Object.assign({type:this.type}, [{data:[]}]);
+                    this.option.series[i].data = data[i];
+                }
+            }
+
+            return this;
+        },
+
+        setYAxisLine: function(show){
+            this.option['yAxis'].axisLine.show = show;
+            return this;
+        },
+        setXAxisLine: function(show){
+            this.option['xAxis'].axisLine.show = show;
+            return this;
+        },
+        setAreaColor : function(colors){
+            var series = clone(this.option.series || [{}]);
+            this.option.series = series;
+            for(var i = 0; i < series.length; i++){
+                this.option.series[i].areaStyle.color = colors[i];
             }
             return this;
         },
+        setItemColor : function(colors){
+            var series = clone(this.option.series || [{}]);
+            this.option.series = series;
+            for(var i = 0; i < series.length; i++){
+                this.option.series[i].itemStyle.color = colors[i];
+            }
+            return this;
+        },
+        setSmooth: function(smooth){
+            var series = clone(this.option.series || [{}]);
+            this.option.series = series;
+            for(var i = 0; i < series.length; i++){
+                this.option.series[i].smooth = smooth;
+            }
+            return this;
+        },
+
         setChartInterval: function(mills){
             setInterval(function(){
                 // 动态刷新坐标点，类型心电图，push一个，pop一个
@@ -205,6 +259,204 @@
             }, mills);
             return this;
         },
+
+
+        /**
+         * 设置默认图标样式，并将图标区分为两类，一类为无类别轴的图标，一类为有类别轴的图标
+         *  setItemDefaultOption: 无类别轴
+         *  setAxisDefault: 有类别轴
+         */
+        setItemDefaultOption : function(type, public){
+            data = {
+                title:{
+                    x:'center',
+                    textStyle:{
+                        color:'green',
+                    },
+                    text: ''
+                },
+                tooltip:{
+                    formatter:'{c}'
+                },
+                xAxis:{
+                    type: 'category',
+                    splitLine:{
+                        show: false
+                    },
+                    axisLabel:{
+                        color: 'rgb(0, 0, 0)',
+                        interval: 'auto',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                        formatter: function (value, index) {
+                            return value;
+                        }
+                    },
+
+                },
+                yAxis:{
+                    type: 'value',
+                    splitLine:{
+                        show: false
+                    },
+                    axisLabel:{
+                        color: 'rgb(0, 0, 0)',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal'
+                    },
+                },
+                series: [
+                    {
+                        areaStyle: {},
+                        itemStyle: {},
+                    }
+                ]
+            };
+            return Object.assign(public || {}, data || {});
+        },
+
+        setBarDefaultOption: function(type, public){
+            data = {
+                title:{
+                    x:'center',
+                    textStyle:{},
+                    text: ''
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    },
+                    borderWidth: 1,
+                    padding: 10,
+                    extraCssText: 'width: 100px'
+                },
+                xAxis:{
+                    type: 'category',
+                    splitLine:{
+                        show: false
+                    },
+                    boundaryGap: false,
+                    axisTick:{
+                        show:false//不显示坐标轴刻度线
+                    },
+                    axisLabel:{
+                        color: 'rgb(0, 0, 0)',
+                        interval: 'auto',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                        formatter: function (value, index) {
+                            return value;
+                        }
+                    },
+                    axisLine:{
+                        lineStyle:{
+                            color: '#38487F'
+                        }
+                    }
+                },
+                yAxis:{
+                    type: 'value',
+                    boundaryGap: false,
+                    splitLine:{
+                        show: false
+                    },
+                    axisTick:{
+                        show:false//不显示坐标轴刻度线
+                    },
+                    axisLine: {
+                        show: false,//不显示坐标轴线
+                    },
+                    axisLabel:{
+                        // color: 'rgb(0, 0, 0)',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal'
+                    },
+                },
+                series: [
+                    {
+                        barWidth: 6,
+                        areaStyle: {},
+                        itemStyle: {},
+                    }
+                ]
+            };
+            return Object.assign(public || {}, data || {});
+        },
+
+        /**
+         * 设置默认图标样式，并将图标区分为两类，一类为无类别轴的图标，一类为有类别轴的图标
+         *  setItemDefaultOption: 无类别轴
+         *  setAxisDefault: 有类别轴
+         */
+        setAxisDefaultOption: function(type, public){
+            data = {
+                title:{
+                    x:'center',
+                    textStyle:{},
+                    text: ''
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    },
+                    borderWidth: 1,
+                    padding: 10,
+                    extraCssText: 'width: 100px'
+                },
+                xAxis:{
+                    type: 'category',
+                    splitLine:{
+                        show: false
+                    },
+                    boundaryGap: false,
+                    axisTick:{
+                        show:false//不显示坐标轴刻度线
+                    },
+                    axisLabel:{
+                        color: 'rgb(0, 0, 0)',
+                        interval: 'auto',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal',
+                        formatter: function (value, index) {
+                            return value;
+                        }
+                    },
+                    axisLine:{
+                        lineStyle:{
+                            color: '#38487F'
+                        }
+                    }
+
+                },
+                yAxis:{
+                    type: 'value',
+                    boundaryGap: false,
+                    splitLine:{
+                        show: false
+                    },
+                    axisTick:{
+                        show:false//不显示坐标轴刻度线
+                    },
+                    axisLine: {
+                        show: false,//不显示坐标轴线
+                    },
+                    axisLabel:{
+                        // color: 'rgb(0, 0, 0)',
+                        fontStyle: 'normal',
+                        fontWeight: 'normal'
+                    },
+                },
+                series: [
+                    {
+                        areaStyle: {},
+                        itemStyle: {},
+                    }
+                ]
+            };
+            return Object.assign(public || {}, data || {});
+        },
         pushPoint: function(point){
             this.queue.push(point);
             return this;
@@ -217,49 +469,7 @@
     var charts = function(type, selector){
         return new Charts(type, selector);
     };
-    charts.setDefault = function(type, public){   //设置所有图表默认设置
-        data = {
-            title:{
-                x:'center',
-                textStyle:{
-                    color:'green',
-                },
-                text: ''
-            },
-            tooltip:{
-                formatter:'{c}'
-            },
-            xAxis:{
-                type: 'category',
-                splitLine:{
-                    show: false
-                },
-                axisLabel:{
-                    color: 'rgb(0, 0, 0)',
-                    interval: 'auto',
-                    fontStyle: 'normal',
-                    fontWeight: 'normal',
-                    formatter: function (value, index) {
-                        return value;
-                    }
-                },
 
-            },
-            yAxis:{
-                type: 'value',
-                splitLine:{
-                    show: false
-                },
-                axisLabel:{
-                    color: 'rgb(0, 0, 0)',
-                    fontStyle: 'normal',
-                    fontWeight: 'normal'
-                },
-            },
-            geo:{}
-        };
-        option[type] = Object.assign(public || {}, data || {});
-    };
     charts.changeDefault = function(type, newItem){       //只能添加和更改默认设置项，不能删除
         function change(option, newItem){
             for(var j in newItem){
